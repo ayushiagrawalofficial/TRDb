@@ -14,6 +14,8 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+LOG_DIR = BASE_DIR.parent / "logs"
+LOG_DIR.mkdir(exist_ok=True)
 
 
 # Quick-start development settings - unsuitable for production
@@ -37,7 +39,18 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Third-party
+    "rest_framework",
+    "rest_framework.authtoken",
+    "django_filters",
+    "guardian",
+    # Custom
 ]
+if DEBUG:
+    INSTALLED_APPS += [
+        "drf_spectacular",
+        "django_extensions",
+    ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -81,6 +94,15 @@ DATABASES = {
 }
 
 
+# Authentication backends
+# https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "guardian.backends.ObjectPermissionBackend",
+]
+
+
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -121,3 +143,73 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Logging
+# https://docs.djangoproject.com/en/3.2/topics/logging/
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "trdb_handler": {
+            "level": "DEBUG",
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "formatter": "verbose",
+            "filename": LOG_DIR / "debug.log",
+            "when": "midnight",
+            "interval": 1,
+            "backupCount": 7,
+        },
+    },
+    "root": {
+        "handlers": ["trdb_handler"],
+        "propagate": True,
+    },
+    "loggers": {
+        "trdb_logger": {
+            "handlers": ["trdb_handler"],
+            "level": "DEBUG",
+        }
+    },
+}
+
+# REST Framework
+# https://www.django-rest-framework.org/api-guide/settings/
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication"
+    ],
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "PAGE_SIZE": None,
+    "TEST_REQUEST_DEFAULT_FORMAT": "json",
+}
+
+# OpenAPI 3.0 Settings (DRF Spectacular)
+# https://drf-spectacular.readthedocs.io/en/latest/readme.html#installation
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "TRDb API",
+    "DESCRIPTION": "Technical Resource Database",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": "/api/v1/",
+    "CONTACT": {
+        "name": "Amogh Madan",
+        "email": "amoghmadaan@mail.com",
+        "url": "https://amoghmadan.github.io",
+    },
+    "LICENSE": {"name": "MIT License"},
+}
