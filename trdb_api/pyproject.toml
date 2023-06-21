@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "trdb-api"
+version = "0.1.0"
+description = "Technical Resource Database API"
+authors = ["Ayushi Agrawal <ayushiag666@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "trdb_api"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+django = ">=4.2.0,<4.3.0"
+djangorestframework = "^3.14.0"
+django-filter = "^23.2"
+django-guardian = "^2.4.0"
+drf-spectacular = "^0.26.2"
+
+
+[tool.poetry.group.dev.dependencies]
+tox = "3.28.0"
+django-extensions = "^3.2.3"
+werkzeug = "^2.3.6"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
