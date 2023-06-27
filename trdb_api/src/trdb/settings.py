@@ -16,6 +16,10 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 LOG_DIR = BASE_DIR.parent / "logs"
 LOG_DIR.mkdir(exist_ok=True)
+MEDIA_ROOT = BASE_DIR.parent / "media"
+MEDIA_ROOT.mkdir(exist_ok=True)
+STATIC_ROOT = BASE_DIR.parent / "static"
+STATIC_ROOT.mkdir(exist_ok=True)
 
 
 # Quick-start development settings - unsuitable for production
@@ -27,7 +31,7 @@ SECRET_KEY = "django-insecure-xm9lp(fbr8mgom1%w$zl_2n=-5cjh+h@se(r82zt-j7lpo=$3(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS: list[str] = []
 
 
 # Application definition
@@ -45,6 +49,8 @@ INSTALLED_APPS = [
     "django_filters",
     "guardian",
     # Custom
+    "accounts",
+    "resources",
 ]
 if DEBUG:
     INSTALLED_APPS += [
@@ -108,7 +114,7 @@ AUTHENTICATION_BACKENDS = [
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",  # NOQA: E501
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
@@ -138,6 +144,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
+MEDIA_URL = "media/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -193,6 +200,7 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "PAGE_SIZE": None,
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
 }
