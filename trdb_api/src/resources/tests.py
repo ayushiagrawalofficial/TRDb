@@ -17,6 +17,7 @@ class TestTechnologyAPI(test.APITestCase):
         super().setUpClass()
         cls.user = User.objects.create_user(username="tester", password="bar")
         cls.token = Token.objects.create(user=cls.user)
+        cls.payload = {"technology_type": Technology.Type.LANGUAGE, "name": "Python"}
 
     @classmethod
     def tearDownClass(cls):
@@ -28,6 +29,10 @@ class TestTechnologyAPI(test.APITestCase):
         super().setUp()
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token.key)
 
+    def tearDown(self) -> None:
+        self.client.credentials(HTTP_AUTHORIZATION=None)
+        super().tearDown()
+
     def test_list_api(self):
         url = reverse(":".join([ResourcesConfig.name, "technology-list"]))
         response = self.client.get(url)
@@ -35,9 +40,41 @@ class TestTechnologyAPI(test.APITestCase):
 
     def test_create_api(self):
         url = reverse(":".join([ResourcesConfig.name, "technology-list"]))
-        payload = {"technology_type": Technology.Type.LANGUAGE, "name": "Python"}
-        response = self.client.post(url, payload)
+        response = self.client.post(url, self.payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_retrieve_api(self):
+        kwargs = self.payload
+        kwargs["user"] = self.user
+        instance = Technology.objects.create(**kwargs)
+        url = reverse(
+            ":".join([ResourcesConfig.name, "technology-detail"]), args=[instance.id]
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_api(self):
+        kwargs = self.payload.copy()
+        kwargs["user"] = self.user
+        instance = Technology.objects.create(**kwargs)
+        payload = self.payload.copy()
+        payload["user"] = self.user.id
+        payload["name"] = "java"
+        url = reverse(
+            ":".join([ResourcesConfig.name, "technology-detail"]), args=[instance.id]
+        )
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_pass_destroy(self):
+        kwargs = self.payload
+        kwargs["user"] = self.user
+        instance = Technology.objects.create(**kwargs)
+        url = reverse(
+            ":".join([ResourcesConfig.name, "technology-detail"]), args=[instance.id]
+        )
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
 class TestStudyResourceAPI(test.APITestCase):
@@ -58,6 +95,10 @@ class TestStudyResourceAPI(test.APITestCase):
     def setUp(self):
         super().setUp()
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token.key)
+
+    def tearDown(self) -> None:
+        self.client.credentials(HTTP_AUTHORIZATION=None)
+        super().tearDown()
 
     def test_list_api(self):
         url = reverse(":".join([ResourcesConfig.name, "study-resource-list"]))
@@ -83,6 +124,10 @@ class TestVoteAPI(test.APITestCase):
     def setUp(self):
         super().setUp()
         self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token.key)
+
+    def tearDown(self) -> None:
+        self.client.credentials(HTTP_AUTHORIZATION=None)
+        super().tearDown()
 
     def test_list_api(self):
         url = reverse(":".join([ResourcesConfig.name, "vote-list"]))
